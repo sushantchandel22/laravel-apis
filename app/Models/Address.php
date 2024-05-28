@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Address extends Model
 {
     use HasFactory;
-
+     protected $hidden = [
+        'created_at',
+        'updated_at',
+        'id',
+        'user_id'
+    ];
     protected $fillable = [
         'user_id',
         'city',
@@ -22,4 +27,6 @@ class Address extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+ 
 }

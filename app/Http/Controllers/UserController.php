@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers;
+
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\LoginUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\Address;
 use App\Models\User;
 use Auth;
@@ -12,20 +14,20 @@ use Hash;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $users = User::all();
-            return response()->json([
-                'users' => $users
-            ]);
+            $limit = $request->query('limit', 10);
+            $sortOrder = $request->query('sort_order', 'asc');
+            $users = User::orderBy($sortOrder)->paginate($limit);
+            $users->load('address');
+            return UserResource::collection($users);
         } catch (\Throwable $th) {
             return response()->json([
                 "message" => "users not found"
             ]);
         }
     }
-
 
     public function store(CreateUserRequest $request)
     {
@@ -52,13 +54,13 @@ class UserController extends Controller
     }
 
 
-
     public function show($id)
     {
         try {
             $user = User::find($id);
+            $user->load('address');
             return response()->json([
-                'user' => $user
+
             ]);
         } catch (\Throwable $th) {
             return response()->json([
@@ -66,7 +68,6 @@ class UserController extends Controller
             ]);
         }
     }
-
 
     public function login(LoginUserRequest $request)
     {
@@ -97,17 +98,13 @@ class UserController extends Controller
         try {
             $user = Auth::guard('api')->user();
             $user->load('address');
-            return response()->json([
-                'message' => 'User logged in successfully',
-                'user' => $user,
-            ]);
+            return new UserResource($user);
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'User login failed',
             ]);
         }
     }
-
 
     public function update(UpdateUserRequest $request, User $user)
     {
