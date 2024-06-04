@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
@@ -9,13 +10,14 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
 // })->middleware('auth:sanctum');
-
-Route::post('login',[UserController::class , 'login'])->name('login');
-
+Route::post('/login',[UserController::class , 'login']);
+Route::post('/signup' , [UserController::class , 'store']);
 
 Route::middleware(['api','auth:api'])->group(function () {
-    Route::get('loggedin', [UserController::class, 'loggedIn'])->name('loggedin');
-    Route::apiResource('users', UserController::class);
+    Route::get('/loggedin', [UserController::class, 'getUser'])->name('loggedin');
+    Route::apiResource('/users', UserController::class);
+    Route::apiResource('products' , ProductController::class);
+    Route::apiResource('carts' , CartController::class);
 });
+
 Route::apiResource('categories', CategoryController::class);
-Route::apiResource('products' , ProductController::class);
