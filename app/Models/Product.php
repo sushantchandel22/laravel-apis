@@ -12,10 +12,26 @@ class Product extends Model
         'title',
         'description',
         'price',
-        'image'
+        'image',
+        'user_id',
+        'category_id'
+    ];
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
+        'user_id'
     ];
     public function categories()
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsTo(Category::class);
     }
-}
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+
+    public function productimages(){
+        return $this->hasMany(Productimage::class);
+    }
+} 

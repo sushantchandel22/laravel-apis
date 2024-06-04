@@ -19,10 +19,10 @@ class AddressResource extends JsonResource
             'street' => $this->street,
             'zipcode' => $this->zipcode,
             'phone' => $this->phone,
-        'geolocation'=>[
-            'latitude'=>$this->latitude,
-            'longitude'=>$this->longitude
-        ]
+            'geolocation' => [
+                'latitude' => $this->latitude,
+                'longitude' => $this->longitude
+            ]
         ];
     }
 }

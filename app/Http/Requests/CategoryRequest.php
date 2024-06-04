@@ -22,14 +22,7 @@ class CategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-<<<<<<<< HEAD:app/Http/Requests/CategoryRequest.php
             'name' => 'required|string|max:255',
-========
-            'title'=>"required",
-            'description'=>"required",
-            'price'=>'required',
-            'image'=>'required'
->>>>>>>> eabc92f245b52910e927b062e5fcfb14ebeefdb7:app/Http/Requests/UpdateProductRequest.php
         ];
     }
 }

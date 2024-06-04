@@ -77,10 +77,23 @@ class UserService
     {
         return $user->createToken('token')->accessToken;
     }
-    public function lpoggedinUser(Request $request)
+    public function loggedinUser(Request $request)
     {
         $user = Auth::guard('api')->user();
         $user->load('address');
         return $user;
+    }
+
+    public function updateUser(array $userData, $userId)
+    {
+        $user = User::findOrFail($userId);
+
+        try {
+            $user->update($userData);
+            return ['success' => true, 'user' => $user];
+        } catch (\Throwable $th) {
+            \Log::error('ERROR :' . $th->getMessage());
+            return ['success' => false, 'message' => 'User updation failed'];
+        }
     }
 }

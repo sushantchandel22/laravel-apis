@@ -1,12 +1,15 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CreateUserRequest;
-use App\Http\Requests\LoginUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\LoginUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Requests\User\UserIndexRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Address;
 use App\Models\User;
+use App\Services\UserService;
 use Auth;
 use Illuminate\Http\Request;
 use Str;
@@ -14,55 +17,49 @@ use Hash;
 
 class UserController extends Controller
 {
+    protected $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function index(Request $request)
     {
         try {
-            $limit = $request->query('limit', 10);
-            $sortOrder = $request->query('sort_order', 'asc');
-            $users = User::orderBy($sortOrder)->paginate($limit);
-            $users->load('address');
+            $users = $this->userService->getUsers($request);
             return UserResource::collection($users);
         } catch (\Throwable $th) {
+            \Log::error('error' . $th->getMessage());
             return response()->json([
                 "message" => "users not found"
             ]);
         }
     }
 
+
     public function store(CreateUserRequest $request)
     {
         try {
-            $user = User::create($request->all());
-            $address = Address::create([
-                'user_id' => $user->id,
-                'city' => $request->city,
-                'street' => $request->street,
-                'zipcode' => $request->zipcode,
-                'phone' => $request->phone,
-                'longitude' => $request->longitude,
-                'latitude' => $request->latitude,
-            ]);
-            $user->address()->save($address);
+            $users = $this->userService->createUser($request);
             return response()->json([
                 'message' => 'User created successfully',
             ]);
         } catch (\Throwable $th) {
+            \Log::error('error=' . $th->getMessage());
             return response()->json([
                 'message' => 'User creation failed',
             ]);
         }
     }
 
-
     public function show($id)
     {
         try {
-            $user = User::find($id);
-            $user->load('address');
-            return response()->json([
-
-            ]);
+            $user = $this->userService->getSingleUser($id);
+            return new UserResource($user);
         } catch (\Throwable $th) {
+            \Log::error('error'.$th->getMessage());
             return response()->json([
                 'message' => 'User not found'
             ]);
@@ -72,54 +69,47 @@ class UserController extends Controller
     public function login(LoginUserRequest $request)
     {
         try {
-            $user = User::where('email', $request->email)->first();
-            if (!empty($user)) {
-                if (Hash::check($request->password, $user->password)) {
-                    $token = $user->createToken('token')->accessToken;
-                    return response()->json([
-                        'message' => 'User login successfully',
-                        'token' => $token,
-                    ]);
-                } else {
-                    return response()->json([
-                        'message' => 'Password is incorrect',
-                    ]);
-                }
-            }
+            $user = $this->userService->loginUser($request);
+            return response()->json([
+                'user' => $user
+            ]);
         } catch (\Throwable $th) {
+            \Log::error('ERROR :' . $th->getMessage());
             return response()->json([
                 'message' => 'User login failed',
+
             ]);
         }
     }
 
-    public function loggedIn(Request $request)
+    public function getUser(Request $request)
     {
         try {
-            $user = Auth::guard('api')->user();
-            $user->load('address');
+            $user = $this->userService->loggedinUser($request);
             return new UserResource($user);
         } catch (\Throwable $th) {
+            \Log::error('ERROR :' . $th->getMessage());
             return response()->json([
                 'message' => 'User login failed',
             ]);
         }
     }
 
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UpdateUserRequest $request, $userId)
     {
-        try {
-            $user->update($request->all());
+        $result = $this->userService->updateUser($request->all(), $userId);
+
+        if ($result['success']) {
             return response()->json([
                 'message' => 'User updated successfully',
+                'user' => $result['user']
             ], 200);
-        } catch (\Throwable $th) {
+        } else {
             return response()->json([
-                'message' => 'User updation failed',
+                'message' => $result['message']
             ], 400);
         }
     }
-
 
     public function destroy(string $id)
     {
@@ -132,6 +122,7 @@ class UserController extends Controller
                 ]);
             }
         } catch (\Throwable $th) {
+            \Log::error('ERROR :' . $th->getMessage());
             return response()->json([
                 'message' => 'User updation failed',
             ]);

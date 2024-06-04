@@ -26,4 +26,5 @@ class UserIndexRequest extends FormRequest
             'sort_order' => 'string|in:asc,desc',
         ];
     }
+
 }
