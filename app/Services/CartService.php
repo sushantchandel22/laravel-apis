@@ -16,23 +16,6 @@ class CartService
     //     }
     // }
     
-    public function createCart(CartRequest $request)
-    {
-        $cartData = $request->all();
-        $cartData['user_id'] = auth()->id();
-        $cartData['date'] = now()->format('Y-m-d'); 
-    
-        $products = [];
-        foreach ($request->input('products') as $product) {
-            $products[] = [
-                'product_id' => $product['id'],
-                'quantity' => $product['quantity'],
-            ];
-        }
-        $cartData['products'] = $products;
-    
-        $addCart = Cart::create($cartData);
-        return $addCart;
-    }
+
    
 }
