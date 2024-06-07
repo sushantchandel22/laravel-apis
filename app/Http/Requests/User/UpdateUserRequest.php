@@ -24,6 +24,10 @@ class UpdateUserRequest extends FormRequest
         return [
             'firstname'=>'required|string|regex:/^[^\d]+$/',
             'lastname'=>'required|string|regex:/^[^\d]+$/',
+            'city'=>'required',
+            'street'=>'required',
+            'zipcode'=>'required',
+            'phone'=>'required'
         ];
     }
 }

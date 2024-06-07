@@ -31,8 +31,8 @@ class CreateUserRequest extends FormRequest
             'street'=>'required',
             'zipcode'=>'required|min:5',
             'phone'=>'required|min:10|max:10',
-            'longitude'=>'required',
-            'latitude'=>'required'
+            'longitude'=>'nullable',
+            'latitude'=>'nullable'
         ];
 
     }

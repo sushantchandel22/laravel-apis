@@ -27,7 +27,6 @@ class UserResource extends JsonResource
                     "street"=>$this->address->street,
                     "city"=>$this->address->city,
                     'zipcode'=>$this->address->zipcode,
-                    
                     'geolocation'=>[
                         'lang'=>$this->address->longitude,
                         'lat'=>$this->address->latitude,

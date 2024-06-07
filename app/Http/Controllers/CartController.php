@@ -1,15 +1,16 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Http\Requests\CartRequest;
+use App\Http\Resources\CartResource;
 use App\Services\CartService;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
-
 {
     protected $cartservice;
-    
+
     public function __construct(CartService $cartService)
     {
         $this->cartservice = $cartService;
@@ -20,7 +21,18 @@ class CartController extends Controller
      */
     public function index()
     {
-        //
+        try{
+            $carts= $this->cartservice->getCarts();
+            return response()->json([
+                'status'=>true,
+                'carts'=> CartResource::collection($carts)
+            ]);
+        }catch(\Throwable $th){
+            \Log::error('error'. $th->getMessage());
+            return response()->json([
+                'status'=>false
+            ]);
+        }
     }
 
     /**
@@ -34,24 +46,24 @@ class CartController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(CartRequest $request)
-    {      
-        try{
-            $cart =$this->cartservice->createCart($request);
+    {
+        try {
+            $cart = $this->cartservice->createCart($request);
             return response()->json([
-                'message'=>'cart creation successful',
-                'cart'=>$cart
+                'status'=>true,
+                'message' => 'cart creation successful',
+                'cart' => $cart
             ]);
-            }catch(\Throwable $th){
-                \Log::error('error'.$th->getMessage());
-                return response()->json([
-                    'message'=>'cart creation failed'
-                ]);
-            }
+        } catch (\Throwable $th) {
+            \Log::error('error' . $th->getMessage());
+            return response()->json([
+                'status'=>false,
+                'message' => 'cart creation failed'
+            ]);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show(string $id)
     {
         //
@@ -68,9 +80,18 @@ class CartController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CartRequest $request, string $id)
     {
-        //
+        try{
+            $cart = $this->cartservice->updateCart($request, $id);
+            return response()->json($cart);
+        }catch(\Throwable $th){
+            \Log::error('error'.$th->getMessage());
+            return response()->json([
+                
+                'message'=>'cart updation failed'
+            ]);
+        }
     }
 
     /**

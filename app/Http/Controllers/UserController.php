@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\LoginUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
@@ -24,31 +23,37 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function index(Request $request)
+    public function index(UserIndexRequest $request)
     {
         try {
             $users = $this->userService->getUsers($request);
-            return UserResource::collection($users);
+            return response()->json([
+                "success" => true,
+                "data" => UserResource::collection($users)
+            ]);
         } catch (\Throwable $th) {
             \Log::error('error' . $th->getMessage());
             return response()->json([
+                "success" => false,
                 "message" => "users not found"
             ]);
         }
     }
-
 
     public function store(CreateUserRequest $request)
     {
         try {
             $users = $this->userService->createUser($request);
             return response()->json([
+                'status' => "true",
                 'message' => 'User created successfully',
+
             ]);
         } catch (\Throwable $th) {
             \Log::error('error=' . $th->getMessage());
             return response()->json([
-                'message' => 'User creation failed',
+                "status" => false,
+                'message' => 'User creation failed'
             ]);
         }
     }
@@ -59,8 +64,9 @@ class UserController extends Controller
             $user = $this->userService->getSingleUser($id);
             return new UserResource($user);
         } catch (\Throwable $th) {
-            \Log::error('error'.$th->getMessage());
+            \Log::error('error' . $th->getMessage());
             return response()->json([
+                'ststus' => false,
                 'message' => 'User not found'
             ]);
         }
@@ -71,11 +77,14 @@ class UserController extends Controller
         try {
             $user = $this->userService->loginUser($request);
             return response()->json([
+                'status' => true,
+                'message' => 'User login successfully',
                 'user' => $user
             ]);
         } catch (\Throwable $th) {
             \Log::error('ERROR :' . $th->getMessage());
             return response()->json([
+                'status' => false,
                 'message' => 'User login failed',
 
             ]);
@@ -90,44 +99,45 @@ class UserController extends Controller
         } catch (\Throwable $th) {
             \Log::error('ERROR :' . $th->getMessage());
             return response()->json([
-                'message' => 'User login failed',
+                'status' => false,
             ]);
         }
     }
 
     public function update(UpdateUserRequest $request, $userId)
     {
-        $result = $this->userService->updateUser($request->all(), $userId);
-
-        if ($result['success']) {
+        try {
+            $result = $this->userService->updateUser($request->all(), $userId);
             return response()->json([
+                'status' => true,
                 'message' => 'User updated successfully',
-                'user' => $result['user']
-            ], 200);
-        } else {
+                'user' => $result
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('error' . $e->getMessage());
             return response()->json([
-                'message' => $result['message']
-            ], 400);
+                'status' => false,
+                'message' => 'An error occurred while updating the user.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
+
 
     public function destroy(string $id)
     {
         try {
-            $user = User::find($id);
-            if (!empty($user)) {
-                $user->delete();
-                return response()->json([
-                    'message' => 'User deleted successfully',
-                ]);
-            }
+            $result = $this->userService->deleteUser($id);
+            return response()->json([
+                'status'=>true,
+                "message"=>"User deleted successfully"
+            ]);
         } catch (\Throwable $th) {
             \Log::error('ERROR :' . $th->getMessage());
             return response()->json([
-                'message' => 'User updation failed',
+                'status' => false,
+                'message' => 'User deletion failed',
             ]);
         }
     }
 }
-
-

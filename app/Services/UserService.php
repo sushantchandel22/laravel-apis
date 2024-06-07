@@ -13,9 +13,9 @@ use Auth;
 
 class UserService
 {
-    public function getUsers(Request $request)
+    public function getUsers($request)
     {
-        $limit = $request->query('limit', 10);
+        $limit = $request->query('limit', 50);
         $sortField = $request->query('sort_field', 'id');
         $sortOrder = $request->query('sort_order', 'asc');
         $users = User::orderBy($sortField, $sortOrder)->paginate($limit);
@@ -23,7 +23,7 @@ class UserService
         return $users;
     }
 
-    public function createUser(CreateUserRequest $request)
+    public function createUser($request)
     {
         $user = User::create($request->all());
         $address = Address::create(array_merge($request->all(), ['user_id' => $user->id]));
@@ -37,19 +37,13 @@ class UserService
         return $user;
     }
 
-    public function deleteUser($id)
-    {
-        $user = User::find($id);
-    }
-
-    public function loginUser(LoginUserRequest $request)
+    public function loginUser($request)
     {
         $user = $this->getUserByEmail($request->email);
         if (!empty($user)) {
             if ($this->checkPassword($request->password, $user->password)) {
                 $token = $this->generateToken($user);
                 return [
-                    'message' => 'User login successfully',
                     'token' => $token,
                 ];
             } else {
@@ -87,13 +81,27 @@ class UserService
     public function updateUser(array $userData, $userId)
     {
         $user = User::findOrFail($userId);
-
-        try {
-            $user->update($userData);
-            return ['success' => true, 'user' => $user];
-        } catch (\Throwable $th) {
-            \Log::error('ERROR :' . $th->getMessage());
-            return ['success' => false, 'message' => 'User updation failed'];
+        $user->load('address');
+        $userFields = ['firstname', 'lastname', 'phone'];
+        $addressFields = ['city', 'street', 'zipcode'];
+        $userDataToUpdate = array_intersect_key($userData, array_flip($userFields));
+        $addressDataToUpdate = array_intersect_key($userData, array_flip($addressFields));
+        $user->update($userDataToUpdate);
+        if ($user->address) {
+            $user->address->update($addressDataToUpdate);
+        } else {
+            $user->address()->create($addressDataToUpdate);
         }
+
+        return $user;
+    }
+
+    public function deleteUser(string $id)
+    {
+        $user = User::find($id);
+        if (!empty($user)) {
+            $user->delete();
+        }
+        return $user;
     }
 }
