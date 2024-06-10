@@ -91,15 +91,7 @@ class ProductController extends Controller
             ]);
         }
     }
-    public function updateData(UpdateProductRequest $request, $id)
-    {
-        dd($request);
-        try {
 
-        } catch (\Throwable $e) {
-
-        }
-    }
 
 
     public function destroy(string $id)

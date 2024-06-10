@@ -37,7 +37,7 @@ class UserService
         return $user;
     }
 
-    public function loginUser($request)
+    public function loginUser($request)   
     {
         $user = $this->getUserByEmail($request->email);
         if (!empty($user)) {

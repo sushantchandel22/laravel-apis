@@ -13,55 +13,60 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
-
     public function getAllProducts($request)
     {
-        $limit = $request->query('limit', 100);
+        $limit = $request->query('limit', 40);
         $sortField = $request->query('sort_field', 'id');
         $sortOrder = $request->query('sort_order', 'asc');
-        $product = Product::orderBy($sortField, $sortOrder)->paginate($limit);
-        $product->load('productimages');
-        return $product;
+        $products = Product::orderBy($sortField, $sortOrder)->paginate($limit);
+        $products->load('productimages');
+        $products->each(function ($product) {
+            foreach ($product->productimages as $image) {
+                $image->url = $image->image_url;
+            }
+        });
+        return $products;
     }
 
 
     public function createProduct($request)
     {
+
+        
         $productData = $request->only('title', 'description', 'price', 'category_id');
         $productData['user_id'] = auth()->id();
         $product = Product::create($productData);
-        
         if ($request->hasFile('image')) {
-            foreach ($request->file('image') as $index => $file) {
-                $imagePath = $this->uploadImage($file);
-                $isFeatured = $request->input('is_featured.' . $index, false);
+            foreach ($request->file('image') as $file) {
+                $imagePath = $this->uploadImage($file, $product->id);
                 ProductImage::create([
                     'product_id' => $product->id,
-                    'product_images' => $imagePath,
-                    'is_featured' => $isFeatured,
+                    'product_image' => $imagePath,
                 ]);
             }
         }
         return $product;
     }
 
-    private function uploadImage($image)
+    public function uploadImage($image, $productId)
     {
-        $filename = time(). '.'. $image->getClientOriginalExtension();
-        $image->storeAs('products', $filename, 'public');
+        $filename = time() . '.' . $image->getClientOriginalExtension();
+        $path = 'products/' . $productId;
+        $image->storeAs($path, $filename, 'public');
         return $filename;
     }
 
- 
- 
-
     public function getSingleProduct($id)
     {
-       
         $product = Product::with('productimages')->find($id);
+        if ($product) {
+            foreach ($product->productimages as $image) {
+                $image->url = $image->image_url;
+            }
+        }
         return $product;
     }
-   
+
     public function deleteProduct($id)
     {
         $product = Product::find($id);
@@ -70,34 +75,32 @@ class ProductService
     }
 
 
-    public function updateProduct1($id, $requestData)
-    {
-        $product = Product::findOrFail($id);
-        $product->update($requestData);
+    // public function updateProduct1($id, $requestData)
+    // {
+    //     $product = Product::findOrFail($id);
+    //     $product->update($requestData);
 
-        return $product;
-    }
+    //     return $product;
+    // }
 
-   
+
     public function updateProduct($id, $request)
     {
         $product = Product::findOrFail($id);
         $product->load('productimages');
-        $productData = $request->only('title', 'description', 'price', 'category_id');
+        $productData = $request->only('title', 'description', 'price');
         $product->update($productData);
-    
+       
         if ($request->hasFile('image')) {
-            foreach ($request->file('image') as $index => $file) {
-                $imagePath = $this->uploadImage($file);
-                $isFeatured = $request->input('is_featured.' . $index, false);
+            foreach ($request->file('image') as$file){
+                $imagePath = $this->uploadImage($file ,$product->id);
                 ProductImage::create([
                     'product_id' => $product->id,
                     'product_images' => $imagePath,
-                    'is_featured' => $isFeatured,
                 ]);
             }
         }
-    
+
         if ($request->has('delete_images')) {
             foreach ($request->input('delete_images') as $imageId) {
                 $productImage = ProductImage::find($imageId);
@@ -109,9 +112,7 @@ class ProductService
         }
         return $product;
     }
-    
-    
-    
+
 
 
 }

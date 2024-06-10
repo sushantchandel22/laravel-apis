@@ -31,31 +31,31 @@ class CartService
     }
 
     public function updateCart(CartRequest $request, $cartId)
-{
-    $cartData = $request->only('date', 'products');
-    $cart = Cart::findOrFail($cartId);
-    
-    $cart->update(['date' => $cartData['date']]);
-    foreach ($cartData['products'] as $product) {   
-        CartProduct::updateOrCreate(
-            [
-                'cart_id' => $cartId,
-                'product_id' => $product['product_id']
-            ],
-            ['quantity' => $product['quantity']]
-        );
+    {
+        $cartData = $request->only('date', 'products');
+        $cart = Cart::findOrFail($cartId);
+
+        $cart->update(['date' => $cartData['date']]);
+        foreach ($cartData['products'] as $product) {
+            CartProduct::updateOrCreate(
+                [
+                    'cart_id' => $cartId,
+                    'product_id' => $product['product_id']
+                ],
+                ['quantity' => $product['quantity']]
+            );
+        }
+        CartProduct::where('cart_id', $cartId)
+            ->whereNotIn('product_id', collect($cartData['products'])->pluck('product_id'))
+            ->delete();
+
+        return $cart;
     }
-    CartProduct::where('cart_id', $cartId)
-        ->whereNotIn('product_id', collect($cartData['products'])->pluck('product_id'))
-        ->delete();
 
-    return $cart;
-}
-
-public function updateCartStatus($cartId, $status)
-{
-    $cart = Cart::findOrFail($cartId);
-    $cart->update(['status' => $status]);
-    return $cart;
-}
+    public function updateCartStatus($cartId, $status)
+    {
+        $cart = Cart::findOrFail($cartId);
+        $cart->update(['status' => $status]);
+        return $cart;
+    }
 }

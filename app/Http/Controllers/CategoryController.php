@@ -18,14 +18,26 @@ class CategoryController extends Controller
     public function index()
     {
         try {
-            $category = $this->categoryService->getCategories();
-            return CategoryResource::collection($category);
+            $category = $this->categoryService->getAllCategories();
+            //return CategoryResource::collection($category);
+            return $category;
         } catch (\Throwable $th) {
             \Log::error('error' . $th->getMessage());
             return response()->json([
                 'message' => 'no category found'
             ]);
         }
+    }
+
+    public function getProductInCategory(){
+     try{
+        $category = $this->categoryService->getCategories();
+        return CategoryResource::collection($category);
+     }catch(\Throwable $th){
+        \Log::error('error' . $th->getMessage());
+        return response()->json([
+       'message'=>'no category find']);
+     }
     }
 
     public function store(Request $request)

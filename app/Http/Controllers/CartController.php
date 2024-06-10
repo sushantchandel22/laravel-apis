@@ -88,7 +88,6 @@ class CartController extends Controller
         }catch(\Throwable $th){
             \Log::error('error'.$th->getMessage());
             return response()->json([
-                
                 'message'=>'cart updation failed'
             ]);
         }

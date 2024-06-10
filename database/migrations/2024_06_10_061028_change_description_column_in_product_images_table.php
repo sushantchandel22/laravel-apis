@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('productimages', function (Blueprint $table) {
-            $table->boolean('is_featured')->default(0)->after('product_images');
+        Schema::table('product_images', function (Blueprint $table) {
+            $table->string('is_featured')->default(0)->change();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('productimages', function (Blueprint $table) {
-            $table->dropColumn('is_featured');
+        Schema::table('product_images', function (Blueprint $table) {
+            $table->boolean('is_featured')->default(0)->change();
         });
     }
 };

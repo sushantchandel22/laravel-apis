@@ -29,7 +29,7 @@ class UserController extends Controller
             $users = $this->userService->getUsers($request);
             return response()->json([
                 "success" => true,
-                "data" => UserResource::collection($users)
+                "data" => UserResource::collection($users),
             ]);
         } catch (\Throwable $th) {
             \Log::error('error' . $th->getMessage());
