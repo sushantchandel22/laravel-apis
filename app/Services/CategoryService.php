@@ -7,6 +7,11 @@ use App\Models\Category;
 class CategoryService
 {
 
+    public function getAllCategories()
+    {
+        $category = Category::all();
+        return $category;
+    }
 
     public function createCategory($request)
     {
@@ -14,19 +19,15 @@ class CategoryService
         return $category;
     }
 
-    public function getCategories()
+    public function getProducts()
     {
         $category = Category::all();
         $category->load('products');
         return $category;
     }
-     public function getAllCategories(){
-        $category =Category::all();
-        return $category;
-     }
+
     public function deleteCategory($id)
     {
-        $Category = Category::findOrFail($id)->delete();
-        return $Category;
+        return Category::findOrFail($id)->delete();
     }
 }

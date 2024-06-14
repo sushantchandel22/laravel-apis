@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CartRequest;
-use App\Http\Resources\CartResource;
+use App\Models\CartProduct;
 use App\Services\CartService;
-use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
@@ -21,28 +20,30 @@ class CartController extends Controller
      */
     public function index()
     {
-        try{
-            $carts= $this->cartservice->getCarts();
+        try {
+            $carts = $this->cartservice->getCarts();
             return response()->json([
-                'status'=>true,
-                'carts'=> CartResource::collection($carts)
+                'status' => true,
+                'carts' => $carts
             ]);
-        }catch(\Throwable $th){
-            \Log::error('error'. $th->getMessage());
+        } catch (\Throwable $th) {
+            \Log::error('error' . $th->getMessage());
             return response()->json([
-                'status'=>false
+                'status' => false
             ]);
         }
     }
 
     /**
      * Show the form for creating a new resource.
+     * 
      */
     public function create()
     {
+
     }
 
-    /**
+    /*
      * Store a newly created resource in storage.
      */
     public function store(CartRequest $request)
@@ -50,19 +51,37 @@ class CartController extends Controller
         try {
             $cart = $this->cartservice->createCart($request);
             return response()->json([
-                'status'=>true,
+                'status' => true,
                 'message' => 'cart creation successful',
                 'cart' => $cart
             ]);
         } catch (\Throwable $th) {
             \Log::error('error' . $th->getMessage());
             return response()->json([
-                'status'=>false,
+                'status' => false,
                 'message' => 'cart creation failed'
             ]);
         }
     }
 
+    public function deleteProductFromCart($cartId, $productId)
+    {
+        try {
+            CartProduct::where('cart_id', $cartId)
+                ->where('product_id', $productId)
+                ->delete();
+            return response()->json([
+                'Status' => true,
+                'message' => 'Product deleted from cart'
+            ]);
+        } catch (\Throwable $th) {
+            \Log::error('error' . $th->getMessage());
+            return response()->json([
+                'Status' => false,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
 
     public function show(string $id)
     {
@@ -82,13 +101,13 @@ class CartController extends Controller
      */
     public function update(CartRequest $request, string $id)
     {
-        try{
+        try {
             $cart = $this->cartservice->updateCart($request, $id);
             return response()->json($cart);
-        }catch(\Throwable $th){
-            \Log::error('error'.$th->getMessage());
+        } catch (\Throwable $th) {
+            \Log::error('error' . $th->getMessage());
             return response()->json([
-                'message'=>'cart updation failed'
+                'message' => 'cart updation failed'
             ]);
         }
     }
@@ -98,6 +117,6 @@ class CartController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

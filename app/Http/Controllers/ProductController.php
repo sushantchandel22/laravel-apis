@@ -5,11 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Product\ProductIndexRequest;
 use App\Http\Requests\Product\ProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
-use App\Http\Resources\ProductResource;
-use App\Models\Cart;
-use App\Models\Product;
 use App\Services\ProductService;
-use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -19,10 +15,10 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function index(ProductIndexRequest $request)
+    public function index()
     {
         try {
-            $product = $this->productService->getAllProducts($request);
+            $product = $this->productService->getAllProducts();
             return response()->json([
                 'status' => true,
                 'product' => $product
@@ -36,7 +32,6 @@ class ProductController extends Controller
         }
     }
 
-
     public function store(ProductRequest $request)
     {
         try {
@@ -44,7 +39,7 @@ class ProductController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Product created successfully',
-                'product' =>$product
+                'product' => $product
             ]);
         } catch (\Throwable $th) {
             \Log::error('error' . $th->getMessage());
@@ -73,26 +68,38 @@ class ProductController extends Controller
     }
 
 
-
-    public function update(UpdateProductRequest $request, string $id)
+    public function updateProduct(UpdateProductRequest $request, $id)
     {
         try {
-            $product = $this->productService->updateProduct($id, $request);
+            $updateProduct = $this->productService->updateProductData($id, $request);
             return response()->json([
                 'status' => true,
-                'message' => 'Product updated successfully',
-                'product' => $product
+                'message' => 'Product Image update successfully',
+                'updatedata' => $updateProduct
             ]);
         } catch (\Throwable $th) {
-            \Log::error('Error updating product: ' . $th->getMessage());
             return response()->json([
-                'status' => false,
-                'message' => 'Product updation failed'
+                'status' => 'false',
+                'message' => $th->getMessage()
             ]);
         }
     }
 
-
+    public function deleteProductImage($id)
+    {
+        try {
+            $deleteProduct = $this->productService->deleteImage($id);
+            return response()->json([
+                'status' => true,
+                'message' => 'Product image deleted successfully'
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => $th->getMessage()
+            ]);
+        }
+    }
 
     public function destroy(string $id)
     {
@@ -100,7 +107,6 @@ class ProductController extends Controller
             $product = $this->productService->deleteProduct($id);
             return response()->json([
                 'status' => true,
-               
                 'message' => 'product deleted successfully'
             ]);
         } catch (\Throwable $th) {
@@ -111,5 +117,5 @@ class ProductController extends Controller
             ]);
         }
     }
-   
+
 }

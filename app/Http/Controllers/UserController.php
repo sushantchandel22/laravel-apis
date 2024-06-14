@@ -6,13 +6,9 @@ use App\Http\Requests\User\LoginUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Requests\User\UserIndexRequest;
 use App\Http\Resources\UserResource;
-use App\Models\Address;
-use App\Models\User;
 use App\Services\UserService;
-use Auth;
 use Illuminate\Http\Request;
-use Str;
-use Hash;
+
 
 class UserController extends Controller
 {
@@ -23,10 +19,10 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function index(UserIndexRequest $request)
+    public function index()
     {
         try {
-            $users = $this->userService->getUsers($request);
+            $users = $this->userService->getUsers();
             return response()->json([
                 "success" => true,
                 "data" => UserResource::collection($users),
@@ -94,7 +90,7 @@ class UserController extends Controller
     public function getUser(Request $request)
     {
         try {
-            $user = $this->userService->loggedinUser($request);
+            $user = $this->userService->loggedInUser($request);
             return new UserResource($user);
         } catch (\Throwable $th) {
             \Log::error('ERROR :' . $th->getMessage());
@@ -119,7 +115,7 @@ class UserController extends Controller
                 'status' => false,
                 'message' => 'An error occurred while updating the user.',
                 'error' => $e->getMessage()
-            ], 500);
+            ]);
         }
     }
 
@@ -129,8 +125,8 @@ class UserController extends Controller
         try {
             $result = $this->userService->deleteUser($id);
             return response()->json([
-                'status'=>true,
-                "message"=>"User deleted successfully"
+                'status' => true,
+                "message" => "User deleted successfully"
             ]);
         } catch (\Throwable $th) {
             \Log::error('ERROR :' . $th->getMessage());

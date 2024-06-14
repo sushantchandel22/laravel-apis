@@ -23,6 +23,7 @@ class UserIndexRequest extends FormRequest
     {
         return [
             'limit' => 'integer|min:1|max:100',
+            'sort_field' => 'string|in:id,username,email',
             'sort_order' => 'string|in:asc,desc',
         ];
     }

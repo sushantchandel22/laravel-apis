@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CategoryRequest;
 use App\Http\Resources\CategoryResource;
-use App\Models\Category;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
 
@@ -19,7 +19,6 @@ class CategoryController extends Controller
     {
         try {
             $category = $this->categoryService->getAllCategories();
-            //return CategoryResource::collection($category);
             return $category;
         } catch (\Throwable $th) {
             \Log::error('error' . $th->getMessage());
@@ -28,10 +27,11 @@ class CategoryController extends Controller
             ]);
         }
     }
+  
 
-    public function getProductInCategory(){
+    public function getProductByCategory(){
      try{
-        $category = $this->categoryService->getCategories();
+        $category = $this->categoryService->getProducts();
         return CategoryResource::collection($category);
      }catch(\Throwable $th){
         \Log::error('error' . $th->getMessage());
@@ -40,7 +40,7 @@ class CategoryController extends Controller
      }
     }
 
-    public function store(Request $request)
+    public function store(CategoryRequest $request)
     {
         try {
             $category =$this->categoryService->createCategory($request);

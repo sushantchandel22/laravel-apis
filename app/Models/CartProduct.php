@@ -14,10 +14,13 @@ class CartProduct extends Model
         'cart_id',
         'product_id',
         'quantity'
-        
+    ];
+
+    protected $hidden = [
+        'id'
     ];
     public function cart()
     {
-        $this->belongsTo(Cart::class);
+       return $this->belongsTo(Cart::class);
     }
 }

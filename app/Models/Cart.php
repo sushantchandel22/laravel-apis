@@ -8,10 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Cart extends Model
 {
     use HasFactory;
-
+ protected $table = 'carts';
     protected $fillable = [
         'user_id',
-        'date'
     ];
 
 
@@ -21,6 +20,6 @@ class Cart extends Model
     ];
     public function cartProducts()
     {
-        $this->hasMany(CartProduct::class);
+       return $this->hasMany(CartProduct::class ,'cart_id');
     }
 }

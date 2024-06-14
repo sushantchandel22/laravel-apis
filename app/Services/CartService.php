@@ -1,41 +1,47 @@
 <?php
 
 namespace App\Services;
-
-use App\Http\Requests\CartRequest;
 use App\Models\Cart;
 use App\Models\CartProduct;
-use App\Models\Product;
-use Illuminate\Http\Request;
 
 class CartService
 {
     public function getCarts()
     {
-        $carts = Cart::all();
+        $carts = Cart::where('user_id', auth()->id())->get();
+        $carts->load('cartProducts');
         return $carts;
     }
-    public function createCart(CartRequest $request)
-    {
-        $cartData = $request->only('date', 'products');
-        $cart = Cart::create(['date' => $cartData['date'], 'user_id' => auth()->id()]);
 
+   
+    public function createCart($request)
+    {
+        $cartData = $request->only('products');
+        $cart = Cart::firstOrCreate(['user_id' => auth()->id()]);
         foreach ($cartData['products'] as $product) {
-            CartProduct::create([
-                'cart_id' => $cart->id,
-                'quantity' => $product['quantity'],
-                'product_id' => $product['product_id']
-            ]);
+            $existingCartProduct = CartProduct::where('cart_id', $cart->id)
+                ->where('product_id', $product['product_id'])
+                ->first();
+            if ($existingCartProduct) {
+                $existingCartProduct->quantity +=1;
+                $existingCartProduct->save();
+            } else {
+                CartProduct::create([
+                    'cart_id' => $cart->id,
+                    'quantity' => $product['quantity'],
+                    'product_id' => $product['product_id']
+                ]);
+            }
         }
+
         return $cart;
     }
 
-    public function updateCart(CartRequest $request, $cartId)
-    {
-        $cartData = $request->only('date', 'products');
-        $cart = Cart::findOrFail($cartId);
 
-        $cart->update(['date' => $cartData['date']]);
+    public function updateCart($request, $cartId)
+    {
+        $cartData = $request->only('products');
+        $cart = Cart::findOrFail($cartId);
         foreach ($cartData['products'] as $product) {
             CartProduct::updateOrCreate(
                 [
@@ -45,10 +51,6 @@ class CartService
                 ['quantity' => $product['quantity']]
             );
         }
-        CartProduct::where('cart_id', $cartId)
-            ->whereNotIn('product_id', collect($cartData['products'])->pluck('product_id'))
-            ->delete();
-
         return $cart;
     }
 
@@ -58,4 +60,5 @@ class CartService
         $cart->update(['status' => $status]);
         return $cart;
     }
+
 }

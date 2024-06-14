@@ -21,13 +21,13 @@ class UpdateProductRequest extends FormRequest
      */
     public function rules(): array
     {
-        dd($this->all());
+        
         return [
             'title' => 'string|max:255',
             'description' => 'string|max:1000',
             'price' => 'numeric|min:0',
-            'image.*' => 'sometimes|file|mimes:jpg,jpeg,png',
-            'delete_images.*' => 'sometimes|integer|exists:product_images,id',
+            'category_id'=>'required',
+            'image.*' => 'sometimes'
         ];
     }
 }

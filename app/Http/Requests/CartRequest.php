@@ -23,12 +23,11 @@ class CartRequest extends FormRequest
     {
 
         return [
-            'date' => 'required',
-            'products' => 'required|array',
-            'products.*.product_id' => 'required',
-            'products.*.quantity' => 'required',
+            'products' => 'sometimes|array',
+            'products.*.product_id' => 'sometimes',
+            'products.*.quantity' => 'sometimes',
         ];
-
+        
     }
     
     }

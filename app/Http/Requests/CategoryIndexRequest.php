@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Requests\Product;
+namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductRequest extends FormRequest
+class CategoryIndexRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -22,13 +22,8 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'=>'required|string',
-            'description'=>'required|string',
-            'price'=>'required',
-            // 'image' => 'required|file|image|mimes:jpeg,png,jpg,gif,svg',
-             'image' => 'required',
-            'category_id'=>'sometimes',
-            //'is_featured' => 'boolean',
+          'sort_field' => 'string|in:id,username,email',
+            'sort_order' => 'string|in:asc,desc',
         ];
     }
 }

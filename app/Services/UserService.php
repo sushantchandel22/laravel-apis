@@ -1,10 +1,6 @@
 <?php
 
 namespace App\Services;
-
-use App\Http\Requests\User\CreateUserRequest;
-use App\Http\Requests\User\LoginUserRequest;
-use App\Http\Requests\User\UpdateUserRequest;
 use App\Models\Address;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,11 +11,11 @@ class UserService
 {
     public function getUsers($request)
     {
-        $limit = $request->query('limit', 50);
-        $sortField = $request->query('sort_field', 'id');
-        $sortOrder = $request->query('sort_order', 'asc');
-        $users = User::orderBy($sortField, $sortOrder)->paginate($limit);
-        $users->load('address');
+        $limit = 50;
+        $sortField = 'id';
+        $sortOrder = 'desc';
+        $users = User::with('address')->orderBy($sortField, $sortOrder)->paginate($limit);
+        
         return $users;
     }
 
@@ -30,48 +26,37 @@ class UserService
         $user->address()->save($address);
         return $user;
     }
-
+  
     public function getSingleUser($id)
     {
         $user = User::with('address')->findOrFail($id);
         return $user;
     }
 
-    public function loginUser($request)   
-    {
-        $user = $this->getUserByEmail($request->email);
-        if (!empty($user)) {
-            if ($this->checkPassword($request->password, $user->password)) {
-                $token = $this->generateToken($user);
-                return [
-                    'token' => $token,
-                ];
-            } else {
-                return [
-                    'message' => 'Password is incorrect',
-                ];
-            }
+
+    public function loginUser($request)
+{
+    $user = User::where('email', $request->email)->first();
+    if (!empty($user)) {
+        if(Hash::check($request->password , $user->password)) {
+            $token = $user->createToken('token')->accessToken;
+            return [
+                'token' => $token,
+            ];
         } else {
             return [
-                'message' => 'User not found',
+                'message' => 'Password is incorrect',
             ];
         }
+    }else {
+        return [
+            'message' => 'User not found',
+        ];
     }
-    private function getUserByEmail($email)
-    {
-        return User::where('email', $email)->first();
-    }
+}
 
-    private function checkPassword($password, $hashedPassword)
-    {
-        return Hash::check($password, $hashedPassword);
-    }
-
-    private function generateToken($user)
-    {
-        return $user->createToken('token')->accessToken;
-    }
-    public function loggedinUser(Request $request)
+    
+    public function loggedInUser(Request $request)
     {
         $user = Auth::guard('api')->user();
         $user->load('address');
@@ -80,8 +65,8 @@ class UserService
 
     public function updateUser(array $userData, $userId)
     {
-        $user = User::findOrFail($userId);
-        $user->load('address');
+        $user = User::with('address')->findOrFail($userId);
+
         $userFields = ['firstname', 'lastname', 'phone'];
         $addressFields = ['city', 'street', 'zipcode'];
         $userDataToUpdate = array_intersect_key($userData, array_flip($userFields));
@@ -92,16 +77,10 @@ class UserService
         } else {
             $user->address()->create($addressDataToUpdate);
         }
-
         return $user;
     }
-
     public function deleteUser(string $id)
     {
-        $user = User::find($id);
-        if (!empty($user)) {
-            $user->delete();
-        }
-        return $user;
+        return User::findOrFail($id)->delete();
     }
 }
