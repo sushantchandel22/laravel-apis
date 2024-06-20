@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Product;
 use App\Models\ProductImage;
-use Log;
 
 class ProductService
 {
@@ -13,8 +12,7 @@ class ProductService
         $limit = 50;
         $sortField = 'id';
         $sortOrder = 'desc';
-        $user = auth()->user();
-        $products = $user->products()->orderBy($sortField, $sortOrder)->paginate($limit);
+        $products = Product::orderBy($sortField, $sortOrder)->paginate($limit);
         $products->load('productimages');
         $products->each(function ($product) {
             foreach ($product->productimages as $image) {
@@ -44,7 +42,7 @@ class ProductService
 
     public function uploadImage($image, $productId)
     {
-        $filename = time() . '.' . $image->getClientOriginalExtension();
+        $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
         $path = 'products/' . $productId;
         $image->storeAs($path, $filename, 'public');
         return $filename;
@@ -64,7 +62,12 @@ class ProductService
 
     public function deleteProduct($id)
     {
-        return Product::findOrFail($id)->delete();
+        $product = Product::find($id);
+        if ($product && $product->user_id === auth()->id()) {
+            $product->delete();
+        } else {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
     }
 
 
@@ -88,7 +91,6 @@ class ProductService
     public function deleteImage($id)
     {
         return ProductImage::find($id)->delete();
-
     }
 }
 

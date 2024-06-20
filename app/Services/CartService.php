@@ -13,7 +13,6 @@ class CartService
         return $carts;
     }
 
-   
     public function createCart($request)
     {
         $cartData = $request->only('products');
@@ -33,10 +32,32 @@ class CartService
                 ]);
             }
         }
-
         return $cart;
     }
 
+    // public function createCart($request)
+    // {
+    //     $cartData = $request->only('products');
+    //     $tempUserId = $request->input('userId');
+
+    //     $cart = Cart::firstOrCreate(['user_id' => $tempUserId]);
+    //     foreach ($cartData['products'] as $product) {
+    //         $existingCartProduct = CartProduct::where('cart_id', $cart->id)
+    //             ->where('product_id', $product['product_id'])
+    //             ->first();
+    //         if ($existingCartProduct) {
+    //             $existingCartProduct->quantity +=1;
+    //             $existingCartProduct->save();
+    //         } else {
+    //             CartProduct::create([
+    //                 'cart_id' => $cart->id,
+    //                 'quantity' => $product['quantity'],
+    //                 'product_id' => $product['product_id']
+    //             ]);
+    //         }
+    //     }
+    //     return $cart;
+    // }
 
     public function updateCart($request, $cartId)
     {

@@ -21,9 +21,7 @@ class CategoryService
 
     public function getProducts()
     {
-        $category = Category::all();
-        $category->load('products');
-        return $category;
+        return Category::with('products.productimages')->get();
     }
 
     public function deleteCategory($id)

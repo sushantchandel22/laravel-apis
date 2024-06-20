@@ -21,8 +21,6 @@ class CartResource extends JsonResource
                 'status' => $this->status,
                'cart_products' => CartProductResource::collection($this->cartProducts),
             ]
-            
         ];
-
     }
 }

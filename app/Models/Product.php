@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Storage;
+
 
 class Product extends Model
 {
@@ -22,7 +22,7 @@ class Product extends Model
         'created_at',
         'updated_at',
         'deleted_at',
-        'user_id'
+        
     ];
     public function categories()
     {
@@ -38,5 +38,4 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class);
     }
-
 }

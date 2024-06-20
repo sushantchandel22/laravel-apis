@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CartRequest;
+use App\Models\Cart;
 use App\Models\CartProduct;
 use App\Services\CartService;
 
@@ -59,11 +60,11 @@ class CartController extends Controller
             \Log::error('error' . $th->getMessage());
             return response()->json([
                 'status' => false,
-                'message' => 'cart creation failed'
+                'message' => $th->getMessage()
             ]);
         }
     }
-
+    
     public function deleteProductFromCart($cartId, $productId)
     {
         try {
@@ -103,7 +104,10 @@ class CartController extends Controller
     {
         try {
             $cart = $this->cartservice->updateCart($request, $id);
-            return response()->json($cart);
+            return response()->json([
+                'carts'=>$cart,
+                'message'=>'cart updation successfully'
+            ]);
         } catch (\Throwable $th) {
             \Log::error('error' . $th->getMessage());
             return response()->json([

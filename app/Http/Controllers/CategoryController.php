@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CategoryRequest;
 use App\Http\Resources\CategoryResource;
+use App\Models\Category;
 use App\Services\CategoryService;
 use Illuminate\Http\Request;
 
@@ -27,23 +28,25 @@ class CategoryController extends Controller
             ]);
         }
     }
-  
 
-    public function getProductByCategory(){
-     try{
-        $category = $this->categoryService->getProducts();
-        return CategoryResource::collection($category);
-     }catch(\Throwable $th){
-        \Log::error('error' . $th->getMessage());
-        return response()->json([
-       'message'=>'no category find']);
-     }
+
+    public function getProductByCategory()
+    {
+        try {
+            $category = $this->categoryService->getProducts();
+            return CategoryResource::collection($category);
+        } catch (\Throwable $th) {
+            \Log::error('error' . $th->getMessage());
+            return response()->json([
+                'message' => 'no category find'
+            ]);
+        }
     }
 
     public function store(CategoryRequest $request)
     {
         try {
-            $category =$this->categoryService->createCategory($request);
+            $category = $this->categoryService->createCategory($request);
             return response()->json([
                 'status' => true,
                 'message' => 'Category created successfully',
@@ -60,7 +63,13 @@ class CategoryController extends Controller
 
     public function show(string $id)
     {
-        //
+        $category = Category::with('products.productimages')->findOrFail($id);
+        foreach ($category->products as $product) {
+            foreach ($product->productimages as $image){
+                $image->url = $image->image_url;
+            }
+        }
+        return $category;
     }
 
     public function update(Request $request, string $id)
@@ -72,10 +81,10 @@ class CategoryController extends Controller
     public function destroy(string $id)
     {
         try {
-          $category = $this->categoryService->deleteCategory($id);
+            $category = $this->categoryService->deleteCategory($id);
             return response()->json([
                 'status' => true,
-                "message"=> "Category Deleted successfully"
+                "message" => "Category Deleted successfully"
             ]);
         } catch (\Throwable $th) {
             \Log::error('error' . $th->getMessage());

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+
 use App\Models\Address;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -9,13 +10,12 @@ use Auth;
 
 class UserService
 {
-    public function getUsers($request)
+    public function getUsers()
     {
         $limit = 50;
         $sortField = 'id';
         $sortOrder = 'desc';
         $users = User::with('address')->orderBy($sortField, $sortOrder)->paginate($limit);
-        
         return $users;
     }
 
@@ -26,7 +26,7 @@ class UserService
         $user->address()->save($address);
         return $user;
     }
-  
+
     public function getSingleUser($id)
     {
         $user = User::with('address')->findOrFail($id);
@@ -35,27 +35,29 @@ class UserService
 
 
     public function loginUser($request)
-{
-    $user = User::where('email', $request->email)->first();
-    if (!empty($user)) {
-        if(Hash::check($request->password , $user->password)) {
-            $token = $user->createToken('token')->accessToken;
-            return [
-                'token' => $token,
-            ];
+    {
+        $user = User::where('email', $request->email)->first();
+        if (!empty($user)) {
+            if (Hash::check($request->password, $user->password)) {
+                $token = $user->createToken('token')->accessToken;
+                
+                return [  
+                    'token' => $token,
+                    'user' => $user
+                ];
+            } else {
+                return [
+                    'message' => 'Password is incorrect',
+                ];
+            }
         } else {
             return [
-                'message' => 'Password is incorrect',
+                'message' => 'User not found',
             ];
         }
-    }else {
-        return [
-            'message' => 'User not found',
-        ];
     }
-}
 
-    
+
     public function loggedInUser(Request $request)
     {
         $user = Auth::guard('api')->user();
